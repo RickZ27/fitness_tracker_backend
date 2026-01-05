@@ -3,7 +3,7 @@ import { UserModel, IUser } from "../models/user.model";
 // Interface for repository (teacher-style)
 export interface IUserRepository {
   getUserByEmail(email: string): Promise<IUser | null>;
-  getUserByPhone(phone: string): Promise<IUser | null>;
+  getUserByUsername(username: string): Promise<IUser | null>;
   getUserById(id: string): Promise<IUser | null>;
   getAllUsers(): Promise<IUser[]>;
   createUser(userData: Partial<IUser>): Promise<IUser>;
@@ -17,8 +17,8 @@ export class UserRepository implements IUserRepository {
     return await UserModel.findOne({ email });
   }
 
-  async getUserByPhone(phone: string): Promise<IUser | null> {
-    return await UserModel.findOne({ phone });
+  async getUserByUsername(username: string): Promise<IUser | null> {
+    return await UserModel.findOne({ username });
   }
 
   async getUserById(id: string): Promise<IUser | null> {
