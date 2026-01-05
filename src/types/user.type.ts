@@ -9,5 +9,4 @@ export const UserSchema = z.object({
   role: z.enum(["user", "admin"]).default("user"),
 });
 
-// TypeScript type inferred from Zod schema
 export type UserType = z.infer<typeof UserSchema>;
