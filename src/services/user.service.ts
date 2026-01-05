@@ -9,9 +9,7 @@ import { JWT_SECRET } from "../config";
 let userRepository = new UserRepository();
 
 export class UserService {
-  // --------------------
-  // Register User
-  // --------------------
+
   async createUser(data: CreateUserDTO) {
     // Check if email already exists
     const emailCheck = await userRepository.getUserByEmail(data.email);
@@ -41,9 +39,7 @@ export class UserService {
     return newUser;
   }
 
-  // --------------------
-  // Login User
-  // --------------------
+
   async loginUser(data: LoginUserDTO) {
     // Find user by email
     const user = await userRepository.getUserByEmail(data.email);
