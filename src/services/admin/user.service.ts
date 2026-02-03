@@ -27,7 +27,7 @@ export class AdminUserService {
         const users = await userRepository.getAllUsers();
         return users;
     }
-
+//delete user by admin
     async deleteUser(id: string){
         const user = await userRepository.getUserById(id);
         if(!user){
