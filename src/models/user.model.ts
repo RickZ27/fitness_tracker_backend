@@ -11,7 +11,7 @@ const UserSchema: Schema = new Schema<UserType>(
             enum: ['user', 'admin'],
             default: 'user',
         },
-        imageUrl: { type: String , required: false},
+        imageUrl: { type: String , required: false}, //for image
     },
     {
         timestamps: true, // auto createdAt and updatedAt
