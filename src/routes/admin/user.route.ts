@@ -9,6 +9,7 @@ const router = Router();
 router.use(authorizedMiddleware); // apply all with middleware
 router.use(adminMiddleware); // apply all with middleware
 
+// CRUD routes for admin to manage users
 router.post("/", uploads.single("image"), adminUserController.createUser);
 router.get("/", adminUserController.getAllUsers);
 router.put("/:id", uploads.single("image"), adminUserController.updateUser);
