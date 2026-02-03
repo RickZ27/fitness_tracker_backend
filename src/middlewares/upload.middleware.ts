@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
             fs.mkdirSync(uploadPath, { recursive: true });
         }
 
-        cb(null, path.join(__dirname, "../../uploads/"));
+        cb(null, path.join(__dirname, "../../uploads/")); // ensure uploads directory exists
     },
     filename: function (req, file, cb) {
         const fileSuffix = uuid.v4();
