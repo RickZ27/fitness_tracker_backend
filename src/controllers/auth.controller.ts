@@ -2,6 +2,7 @@ import { UserService } from "../services/user.service";
 import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../dtos/user.dto";
 import { Request, Response } from "express";
 import z from "zod";
+import { HttpError } from "../errors/http-error";
 let userService = new UserService();
 export class AuthController {
     async register(req: Request, res: Response) {
@@ -23,6 +24,7 @@ export class AuthController {
             );
         }
     }
+
 
     async login(req: Request, res: Response) {
         try {
@@ -91,4 +93,34 @@ export class AuthController {
             );
         }
     }
+
+
+
+
+    forgotPassword = async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    if (!email) throw new HttpError(400, "Email is required");
+
+    const token = await userService.forgotPassword(email);
+
+    return res.json({
+      success: true,
+      message: "If email exists, OTP sent.",
+      data: { token },
+    });
+  };
+
+  resetPassword = async (req: Request, res: Response) => {
+    const { password, otp } = req.body;
+    const token = req.query.token as string;
+
+    if (!token) throw new HttpError(400, "Token missing");
+    await userService.resetPassword(token, otp, password);
+
+    return res.json({
+      success: true,
+      message: "Password reset successful",
+    });
+  };
 }

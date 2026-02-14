@@ -1,11 +1,13 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { UserType } from "../types/user.type";
-const UserSchema: Schema = new Schema<UserType>(
+const UserSchema: Schema = new Schema<IUser>(
     {
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
         username: { type: String, required: true, unique: true },
         fullName: { type: String },
+        otp_expires: { type: Date, default: null },
+        otp: { type: String, default: null },
         role: {
             type: String,
             enum: ['user', 'admin'],
@@ -21,6 +23,8 @@ const UserSchema: Schema = new Schema<UserType>(
 export interface IUser extends UserType, Document { // combine UserType and Document
     _id: mongoose.Types.ObjectId; // mongo related attribute/ custom attributes
     createdAt: Date;
+    otp_expires?: Date,
+    otp?: string,
     updatedAt: Date;
 }
 
