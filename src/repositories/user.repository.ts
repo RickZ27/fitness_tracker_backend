@@ -1,49 +1,81 @@
-import { UserModel, IUser } from "../models/user.model";
-export interface IUserRepository {
-    getUserByEmail(email: string): Promise<IUser | null>;
-    getUserByUsername(username: string): Promise<IUser | null>;
-    // Additional
-    // 5 common database queries for entity
-    createUser(userData: Partial<IUser>): Promise<IUser>;
-    getUserById(id: string): Promise<IUser | null>;
-    getAllUsers(): Promise<IUser[]>;
-    updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null>;
-    deleteUser(id: string): Promise<boolean>;
-}
-// MongoDb Implementation of UserRepository
-export class UserRepository implements IUserRepository {
-    async createUser(userData: Partial<IUser>): Promise<IUser> {
-        const user = new UserModel(userData); 
-        return await user.save();
-    }
-    async getUserByEmail(email: string): Promise<IUser | null> {
-        const user = await UserModel.findOne({ "email": email })
-        return user;
-    }
-    async getUserByUsername(username: string): Promise<IUser | null> {
-        const user = await UserModel.findOne({ "username": username })
-        return user;
+import mongoose from 'mongoose';
+import { UserModel, IUser } from '../models/user.model';
+
+export class UserRepository {
+    async getUserById(id: string): Promise<IUser | null> {
+        if (!mongoose.Types.ObjectId.isValid(id)) return null;
+        return UserModel.findById(id);
     }
 
-    async getUserById(id: string): Promise<IUser | null> {
-        // UserModel.findOne({ "_id": id });
-        const user = await UserModel.findById(id);
-        return user;
+    async getUserByEmail(email: string): Promise<IUser | null> {
+        return UserModel.findOne({ email: email.toLowerCase() }).select('+password');
     }
-    async getAllUsers(): Promise<IUser[]> {
-        const users = await UserModel.find();
-        return users;
+
+    async getUserByUsername(username: string): Promise<IUser | null> {
+        return UserModel.findOne({ username });
     }
-    async updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null> {
-        // UserModel.updateOne({ _id: id }, { $set: updateData });
-        const updatedUser = await UserModel.findByIdAndUpdate(
-            id, updateData, { new: true } // return the updated document
-        );
-        return updatedUser;
+
+    async getUserByPasswordResetToken(tokenHash: string): Promise<IUser | null> {
+        return UserModel.findOne({
+            passwordResetToken:   tokenHash,
+            passwordResetExpires: { $gt: new Date() },
+        }).select('+passwordResetToken +passwordResetExpires');
     }
+
+    async createUser(data: { email: string; username: string; password: string; fullName?: string }): Promise<IUser> {
+        return UserModel.create(data);
+    }
+
+    async updateUser(id: string, data: Partial<IUser>): Promise<IUser | null> {
+        return UserModel.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true });
+    }
+
+    async setPasswordResetToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void> {
+        await UserModel.findByIdAndUpdate(userId, {
+            $set: { passwordResetToken: tokenHash, passwordResetExpires: expiresAt },
+        });
+    }
+
+    async clearPasswordResetToken(userId: string): Promise<void> {
+        await UserModel.findByIdAndUpdate(userId, {
+            $unset: { passwordResetToken: '', passwordResetExpires: '' },
+        });
+    }
+
+    async updateRefreshTokens(userId: string, refreshTokens: IUser['refreshTokens']): Promise<void> {
+        await UserModel.findByIdAndUpdate(userId, { $set: { refreshTokens } });
+    }
+
+    async clearAllRefreshTokens(userId: string): Promise<void> {
+        await UserModel.findByIdAndUpdate(userId, { $set: { refreshTokens: [] } });
+    }
+
+    async pullRefreshToken(userId: string, tokenHash: string): Promise<void> {
+        await UserModel.findByIdAndUpdate(userId, {
+            $pull: { refreshTokens: { tokenHash } },
+        });
+    }
+
+    // Admin
+    async getAllUsers(page: number = 1, limit: number = 20) {
+        const skip = (page - 1) * limit;
+        const [users, total] = await Promise.all([
+            UserModel.find().skip(skip).limit(limit).select('-password -refreshTokens'),
+            UserModel.countDocuments(),
+        ]);
+        return { users, total };
+    }
+
     async deleteUser(id: string): Promise<boolean> {
-        // UserModel.deleteOne({ _id: id });
-        const result = await UserModel.findByIdAndDelete(id);
-        return result ? true : false;
+        const result = await UserModel.deleteOne({ _id: id });
+        return result.deletedCount > 0;
     }
+
+    async updateAdminUser(id: string, data: Record<string, any>): Promise<IUser | null> {
+    return UserModel.findByIdAndUpdate(
+        id,
+        { $set: data },
+        { new: true, runValidators: true }
+    ).select('-password -refreshTokens');
+}
 }

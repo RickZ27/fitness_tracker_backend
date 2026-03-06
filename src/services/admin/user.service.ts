@@ -1,57 +1,32 @@
-import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../../dtos/user.dto";
-import { UserRepository } from "../../repositories/user.repository";
-import  bcryptjs from "bcryptjs"
-import { HttpError } from "../../errors/http-error";
-
-let userRepository = new UserRepository();
+import { UserRepository } from '../../repositories/user.repository';
+import { IUser } from '../../models/user.model';
+import { HttpError } from '../../errors/http-error';
 
 export class AdminUserService {
-    async createUser(data: CreateUserDTO){
-        const emailCheck = await userRepository.getUserByEmail(data.email);
-        if(emailCheck){
-            throw new HttpError(403, "Email already in use");
-        }
-        const usernameCheck = await userRepository.getUserByUsername(data.username);
-        if(usernameCheck){
-            throw new HttpError(403, "Username already in use");
-        }
-        // hash password
-        const hashedPassword = await bcryptjs.hash(data.password, 10); // 10 - complexity
-        data.password = hashedPassword;
+    private userRepository: UserRepository;
 
-        const newUser = await userRepository.createUser(data);
-        return newUser;
+    constructor() {
+        this.userRepository = new UserRepository();
     }
 
-    async getAllUsers(){
-        const users = await userRepository.getAllUsers();
-        return users;
-    }
-//delete user by admin
-    async deleteUser(id: string){
-        const user = await userRepository.getUserById(id);
-        if(!user){
-            throw new HttpError(404, "User not found");
-        }
-        const deleted = await userRepository.deleteUser(id);
-        return deleted;
+    async getAllUsers(page: number = 1, limit: number = 20) {
+        return this.userRepository.getAllUsers(page, limit);
     }
 
-    async updateUser(id: string, updateData: UpdateUserDTO){
-        const user = await userRepository.getUserById(id);
-        if(!user){
-            throw new HttpError(404, "User not found");
-        }
-        const updatedUser = await userRepository.updateUser(id, updateData);
-        return updatedUser;
-    }
-
-    async  getUserById(id: string){
-        const user = await userRepository.getUserById(id);
-        if(!user){
-            throw new HttpError(404, "User not found");
-        }
+    async getUserById(id: string): Promise<IUser> {
+        const user = await this.userRepository.getUserById(id);
+        if (!user) throw new HttpError(404, 'User not found');
         return user;
     }
 
+    async updateUser(id: string, data: Record<string, any>): Promise<IUser> {
+        const user = await this.userRepository.updateAdminUser(id, data);  // ← updateAdminUser
+        if (!user) throw new HttpError(404, 'User not found');
+        return user;
+    }
+
+    async deleteUser(id: string): Promise<void> {
+        const deleted = await this.userRepository.deleteUser(id);
+        if (!deleted) throw new HttpError(404, 'User not found');
+    }
 }
