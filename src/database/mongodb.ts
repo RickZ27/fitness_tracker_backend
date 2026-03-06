@@ -1,12 +1,12 @@
-import mongoose from "mongoose";
-import { MONGODB_URI } from "../config";
+import mongoose from 'mongoose';
+import { MONGODB_URI } from '../config';
 
-export async function connectDatabase(){
+export const connectDatabase = async (): Promise<void> => {
     try {
         await mongoose.connect(MONGODB_URI);
-        console.log("Connected to MongoDB");
+        console.log('MongoDB connected');
     } catch (error) {
-        console.error("Database Error:", error);
-        process.exit(1); // Exit process with failure
+        console.error('MongoDB connection error:', error);
+        process.exit(1);
     }
-}
+};

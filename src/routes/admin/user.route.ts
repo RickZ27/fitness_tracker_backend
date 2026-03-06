@@ -1,19 +1,16 @@
-import { Router } from "express";
-import { authorizedMiddleware, adminMiddleware } from "../../middlewares/authorized.middleware";
-import { AdminUserController } from "../../controllers/admin/user.controller";
-import { uploads } from "../../middlewares/upload.middleware";
-let adminUserController = new AdminUserController();
+import { Router } from 'express';
+import { AdminUserController } from '../../controllers/admin/user.controller';
+import { authorizedMiddleware, adminMiddleware } from '../../middlewares/authorized.middleware';
+import { uploads } from '../../middlewares/upload.middleware';
 
 const router = Router();
+const adminUserController = new AdminUserController();
 
-router.use(authorizedMiddleware); // apply all with middleware
-router.use(adminMiddleware); // apply all with middleware
+router.use(authorizedMiddleware, adminMiddleware);
 
-// CRUD routes for admin to manage users
-router.post("/", uploads.single("image"), adminUserController.createUser);
-router.get("/", adminUserController.getAllUsers);
-router.put("/:id", uploads.single("image"), adminUserController.updateUser);
-router.delete("/:id", adminUserController.deleteUser);
-router.get("/:id", adminUserController.getUserById);
+router.get('/',        adminUserController.getAllUsers);
+router.get('/:id',     adminUserController.getUserById);
+router.put('/:id', uploads.single('image'), adminUserController.updateUser);
+router.delete('/:id',  adminUserController.deleteUser);
 
 export default router;
