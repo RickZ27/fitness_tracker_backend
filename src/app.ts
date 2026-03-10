@@ -12,6 +12,8 @@ import goalRoutes          from './routes/goal.route';
 import analyticsRoutes     from './routes/analytics.route';
 import adminUserRoutes     from './routes/admin/user.route';
 import adminExerciseRoutes from './routes/admin/exercise.route';
+import analyticsRouter from "./routes/admin/analytics.route";
+
 
 const app: Application = express();
 
@@ -37,6 +39,8 @@ app.use('/api/goals',           goalRoutes);
 app.use('/api/analytics',       analyticsRoutes);
 app.use('/api/admin/users',     adminUserRoutes);
 app.use('/api/admin/exercises', adminExerciseRoutes);
+
+app.use("/api/admin/analytics", analyticsRouter);
 
 app.get('/', (req: Request, res: Response) => {
     return res.status(200).json({ success: 'true', message: 'Welcome to the API' });

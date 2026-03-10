@@ -15,6 +15,7 @@ export class ProfileService {
     constructor() {
         this.profileRepo    = new ProfileRepository();
         this.bodyMetricRepo = new BodyMetricRepository();
+        this.goalService    = new GoalService();
     }
 
     async getProfile(userId: string): Promise<IProfile> {

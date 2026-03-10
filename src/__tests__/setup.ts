@@ -1,8 +1,8 @@
-import { connectDatabaseTest } from "../database/mongodb";
+import { connectDatabase } from "../database/mongodb";
 import mongoose from "mongoose";
 
 beforeAll(async () => {
-    await connectDatabaseTest();
+    await connectDatabase();
 });
 
 afterAll(async () => {
